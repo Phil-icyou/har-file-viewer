@@ -1,82 +1,65 @@
 HAR File Viewer
-A web-based tool for analyzing HTTP Archive (HAR) files. Upload, filter, and examine network requests and responses efficiently.
 
-Table of Contents
-About the Project
+A web-based tool for analyzing HTTP Archive (HAR) files. Effortlessly upload, filter, and examine network requests and responses.
 
-Features
+MIT License
+Responsive Design
+Built With
 
-Usage
+🚀 About the Project
 
-Technologies
+HAR File Viewer provides a streamlined solution for visualizing and analyzing .har files. It helps developers and testers inspect web network requests without relying on complex browser tools.
 
-Contributing
+✨ Features
 
-License
-
-About the Project
-This project offers a streamlined solution for visualizing and analyzing data from .har files. It assists developers and testers in inspecting web network requests without complex browser tools.
-
-Features
 HAR File Upload: Drag-and-drop or select .har files.
-
 Request Table: Clear display of requests (method, status, URL, domain, time).
-
 Filtering Options: Filter by URL/domain, status code, HTTP method, and content type.
-
 Detailed View: Access comprehensive request/response details (headers, body).
-
 Copy Functionality: Copy URLs or detailed content to clipboard.
-
-Performance Summary: Key metrics: total requests, time, size, errors, redirects.
-
+Performance Summary: Key metrics like total requests, time, size, errors, and redirects.
 Export Functionality: Export filtered data as JSON.
-
-Dark/Light Mode: Toggle themes for optimal viewing.
-
+Dark/Light Mode: Toggle between themes for optimal viewing experience.
 Responsive Design: Optimized for all devices.
+🛠️ Technologies Used
 
-Usage
-Clone the Repository:
-
-git clone https://github.com/Phil-icyou/har-file-viewer.git
-cd har-file-viewer
-
-Open the File:
-Open index.html directly in your browser (no server needed).
-
-Upload Your HAR File:
-Drag .har file or click to select.
-
-Analyze Data:
-View requests in the table, use filters, and click rows for details.
-
-Technologies
 HTML5
-
 CSS3
-
 Tailwind CSS (CDN)
-
 JavaScript (Vanilla JS)
 
-Contributing
-Contributions are welcome.
+📦 Usage
+Clone the Repository
+sh
+git clone https://github.com/Phil-icyou/har-file-viewer.git
+cd har-file-viewer
+Open the Application
+Open index.html directly in your browser (no server needed).
+Upload Your HAR File
+
+Drag a .har file into the page or click to select a file.
+Analyze Data
+
+View requests in the table, use filters, and click any row for detailed information.
+
+🤝 Contributing
+Contributions are welcome!
+To get started:
 
 Open an issue.
-
 Fork the repository.
-
-Create a branch (git checkout -b feature/DescriptiveFeatureName).
-
-Commit changes (git commit -m 'Implement DescriptiveFeatureName').
-
-Push to branch (git push origin feature/DescriptiveFeatureName).
-
+Create a new branch:
+sh
+git checkout -b feature/YourFeatureName
+Commit your changes:
+sh
+git commit -m "Add YourFeatureName"
+Push to your branch:
+sh
+git push origin feature/YourFeatureName
 Submit a Pull Request.
+📄 License
 
-License
-This project is licensed under the MIT License. See LICENSE for details.
+This project is licensed under the MIT License.
 
-Efficiently analyze your HAR files.
-
+Efficiently analyze your HAR files with a modern, user-friendly interface!
