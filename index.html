@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HAR File Viewer - English Version</title>
+  <!-- Tailwind CSS CDN for easy styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Custom CSS variables for consistent colors and fonts */
+    :root {
+      --bg-color: #1a1a2e; /* Dark background */
+      --text-color: #e0e0e0; /* Light text */
+      --accent-color: #007bff; /* Accent color for interactive elements */
+      --error-color: #dc3545; /* Error color */
+      --success-color: #28a745; /* Success color */
+      --warning-color: #ffc107; /* Warning color */
+      --card-bg: #2a2a3f; /* Background for cards/containers */
+      --border-color: #3a3a4f; /* Border color */
+      --font-family: 'Inter', sans-serif; /* Global font */
+    }
+
+    /* Light Mode Variables */
+    body.light-mode {
+      --bg-color: #f0f2f5;
+      --text-color: #333;
+      --card-bg: #ffffff;
+      --border-color: #e0e0e0;
+      --accent-color: #0056b3;
+      --error-color: #c82333;
+      --success-color: #218838;
+      --warning-color: #e0a800;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-family);
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Header style */
+    header {
+      background-color: var(--card-bg);
+      padding: 1.5rem;
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-color);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+      position: relative; /* For the toggle button */
+    }
+
+    /* Dark/Light Mode Toggle */
+    #themeToggle {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      background-color: var(--accent-color);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background-color 0.3s ease;
+    }
+
+    #themeToggle:hover {
+      background-color: #0056b3;
+    }
+
+    /* Main content area */
+    main {
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Upload area for Drag & Drop */
+    .upload-area {
+      border: 2px dashed var(--border-color);
+      padding: 3rem;
+      text-align: center;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+      background-color: var(--card-bg);
+    }
+
+    .upload-area:hover {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 15px rgba(0, 123, 255, 0.3);
+    }
+
+    /* Filter input field */
+    #filterInput {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background-color: var(--card-bg);
+      color: var(--text-color);
+      font-size: 1rem;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    }
+
+    #filterInput::placeholder {
+      color: #a0a0a0;
+    }
+
+    /* Filter and action bar */
+    .filter-actions-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      align-items: center;
+    }
+
+    .filter-select, .action-button {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background-color: var(--card-bg);
+      color: var(--text-color);
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    }
+
+    .filter-select:hover, .action-button:hover {
+      background-color: #33334f;
+      border-color: var(--accent-color);
+    }
+
+    .action-button {
+      background-color: var(--accent-color);
+      color: white;
+      border: none;
+    }
+
+    .action-button:hover {
+      background-color: #0056b3;
+    }
+
+    /* Request table */
+    #requestTable {
+      width: 100%;
+      border-collapse: separate; /* For rounded corners */
+      border-spacing: 0;
+      margin-top: 1rem;
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      overflow: hidden; /* Important for rounded table corners */
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+    #requestTable th, #requestTable td {
+      padding: 1rem 1.25rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+      transition: border-color 0.3s ease;
+    }
+
+    #requestTable th {
+      background-color: #33334f;
+      font-weight: 600;
+      color: #f0f0f0;
+      position: sticky; /* Sticky Header */
+      top: 0;
+      z-index: 10;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    #requestTable tbody tr {
+      transition: background-color 0.2s ease;
+      cursor: pointer;
+    }
+
+    #requestTable tbody tr:hover {
+      background-color: #2c2c45;
+    }
+
+    /* Specific column widths and styles */
+    td.method {
+      width: 100px;
+      font-weight: bold;
+      color: var(--accent-color);
+    }
+
+    td.status {
+      width: 80px;
+      font-weight: bold;
+    }
+
+    /* Status colors */
+    .status-2xx { color: var(--success-color); }
+    .status-3xx { color: var(--warning-color); }
+    .status-4xx, .status-5xx { color: var(--error-color); }
+
+    /* Tooltip style */
+    .tooltip {
+      position: relative;
+      cursor: help;
+    }
+
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 220px;
+      background-color: #555;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 0.75rem;
+      position: absolute;
+      z-index: 100;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.3s, visibility 0.3s;
+      font-size: 0.85rem;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    /* Favicon style */
+    .favicon {
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
+      vertical-align: middle;
+      border-radius: 4px;
+    }
+
+    /* Details section */
+    #details-container {
+      background-color: var(--card-bg);
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-top: 2rem;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+    .details-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 1rem;
+      transition: border-color 0.3s ease;
+    }
+
+    .details-tab-button {
+      padding: 0.75rem 1.25rem;
+      cursor: pointer;
+      border: none;
+      background-color: transparent;
+      color: var(--text-color);
+      font-weight: 500;
+      transition: color 0.2s ease, border-bottom 0.2s ease;
+      border-bottom: 2px solid transparent;
+    }
+
+    .details-tab-button.active {
+      color: var(--accent-color);
+      border-bottom: 2px solid var(--accent-color);
+    }
+
+    .details-tab-button:hover:not(.active) {
+      color: var(--accent-color);
+    }
+
+    .details-content {
+      font-family: 'Fira Code', 'Cascadia Code', monospace; /* Monospace font for code */
+      white-space: pre-wrap; /* Preserve line breaks */
+      word-break: break-all; /* Break long words */
+      max-height: 400px; /* Max height */
+      overflow-y: auto; /* Scrollbar on overflow */
+      padding: 0.5rem;
+      background-color: #1e1e2f; /* Darker background for code */
+      border-radius: 8px;
+      border: 1px solid #333;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+      position: relative; /* For the copy button */
+    }
+
+    .details-content img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 1rem auto;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    /* Removed Modal CSS rules */
+
+    /* Performance Summary specific styling for boxes */
+    #performance-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1.5rem; /* Increased gap for better separation */
+      margin-bottom: 2rem;
+      background-color: transparent; /* Changed to transparent as items will have their own background */
+      padding: 0; /* Removed padding from container */
+      border-radius: 0; /* Removed border-radius from container */
+      border: none; /* Removed border from container */
+      box-shadow: none; /* Removed shadow from container */
+    }
+
+    .summary-item {
+      text-align: center;
+      padding: 1.25rem; /* Increased padding within each box */
+      border-radius: 12px; /* Rounded corners for each box */
+      background-color: var(--card-bg); /* Background for each box */
+      border: 1px solid var(--border-color); /* Border for each box */
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Shadow for each box */
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .summary-item:hover {
+      transform: translateY(-5px); /* Slight lift effect on hover */
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25); /* Enhanced shadow on hover */
+    }
+
+    .summary-item .value {
+      font-size: 2rem; /* Larger font for values */
+      font-weight: 700;
+      color: var(--accent-color);
+      margin-bottom: 0.25rem; /* Space between value and label */
+    }
+
+    .summary-item .label {
+      font-size: 1rem; /* Slightly larger font for labels */
+      color: #a0a0a0;
+      text-transform: uppercase; /* Uppercase for labels */
+      letter-spacing: 0.05em; /* Slight letter spacing */
+    }
+
+    /* Responsive adjustments for summary items */
+    @media (max-width: 768px) {
+      #performance-summary {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Adjust min-width for smaller screens */
+        gap: 1rem;
+      }
+      .summary-item {
+        padding: 1rem;
+      }
+      .summary-item .value {
+        font-size: 1.75rem;
+      }
+      .summary-item .label {
+        font-size: 0.85rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      #performance-summary {
+        grid-template-columns: 1fr; /* Stack vertically on very small screens */
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    HAR File Viewer
+    <button id="themeToggle">Light Mode</button>
+  </header>
+  <main>
+    <div class="upload-area" id="dropZone">
+      <p class="text-lg font-medium">Drag your .har file here or click to select</p>
+      <input type="file" id="fileInput" accept=".har" hidden />
+    </div>
+
+    <!-- Performance summary -->
+    <div id="performance-summary" class="hidden">
+      <div class="summary-item">
+        <div class="value" id="totalRequests">0</div>
+        <div class="label">Requests</div>
+      </div>
+      <div class="summary-item">
+        <div class="value" id="totalTime">0 ms</div>
+        <div class="label">Total Time</div>
+      </div>
+      <div class="summary-item">
+        <div class="value" id="totalSize">0 KB</div>
+        <div class="label">Total Size</div>
+      </div>
+      <div class="summary-item">
+        <div class="value" id="errorCount">0</div>
+        <div class="label">Errors (4xx/5xx)</div>
+      </div>
+      <div class="summary-item">
+        <div class="value" id="redirectCount">0</div>
+        <div class="label">Redirects (3xx)</div>
+      </div>
+    </div>
+
+    <input type="text" id="filterInput" placeholder="Filter by URL or Domain..." class="block w-full" />
+
+    <!-- Filter and action bar -->
+    <div class="filter-actions-bar">
+      <select id="statusCodeFilter" class="filter-select">
+        <option value="">All Status Codes</option>
+        <option value="2xx">2xx Successful</option>
+        <option value="3xx">3xx Redirection</option>
+        <option value="4xx">4xx Client Error</option>
+        <option value="5xx">5xx Server Error</option>
+      </select>
+
+      <select id="methodFilter" class="filter-select">
+        <option value="">All Methods</option>
+        <option value="GET">GET</option>
+        <option value="POST">POST</option>
+        <option value="PUT">PUT</option>
+        <option value="DELETE">DELETE</option>
+        <option value="HEAD">HEAD</option>
+        <option value="OPTIONS">OPTIONS</option>
+      </select>
+
+      <select id="contentTypeFilter" class="filter-select">
+        <option value="">All Content Types</option>
+        <option value="image">Images</option>
+        <option value="script">Scripts (JS)</option>
+        <option value="stylesheet">Stylesheets (CSS)</option>
+        <option value="document">Documents (HTML)</option>
+        <option value="xhr">XHR/Fetch</option>
+        <option value="json">JSON</option>
+        <option value="other">Other</option>
+      </select>
+
+      <button id="clearFiltersButton" class="action-button">Clear Filters</button>
+      <button id="exportButton" class="action-button">Export Table (JSON)</button>
+    </div>
+
+    <div class="overflow-x-auto rounded-lg shadow-lg">
+      <table id="requestTable" class="min-w-full">
+        <thead>
+          <tr>
+            <th>Method</th>
+            <th class="tooltip">Status<span class="tooltiptext">HTTP status code of the response</span></th>
+            <th>URL</th>
+            <th>Domain</th>
+            <th>Favicon</th>
+            <th>Time (ms)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Table rows will be dynamically inserted here -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Details container with tabs -->
+    <div id="details-container" class="mt-8 hidden">
+      <div class="details-tabs">
+        <button class="details-tab-button active" data-tab="overview">Overview</button>
+        <button class="details-tab-button" data-tab="request-headers">Request Headers</button>
+        <button class="details-tab-button" data-tab="request-body">Request Body</button>
+        <button class="details-tab-button" data-tab="response-headers">Response Headers</button>
+        <button class="details-tab-button" data-tab="response-body">Response Body</button>
+      </div>
+      <div class="details-search-bar">
+        <input type="text" id="detailsSearchInput" placeholder="Search in details..." />
+        <button id="detailsSearchButton">Search</button>
+      </div>
+      <div id="details-content-overview" class="details-content">
+        <button class="details-content-copy-button" onclick="copyDetailsContent('overview')">Copy</button>
+        <pre>Click a row to view details</pre>
+      </div>
+      <div id="details-content-request-headers" class="details-content hidden">
+        <button class="details-content-copy-button" onclick="copyDetailsContent('requestHeaders')">Copy</button>
+      </div>
+      <div id="details-content-request-body" class="details-content hidden">
+        <button class="details-content-copy-button" onclick="copyDetailsContent('requestBody')">Copy</button>
+      </div>
+      <div id="details-content-response-body" class="details-content hidden">
+        <button class="details-content-copy-button" onclick="copyDetailsContent('responseBody')">Copy</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Removed Modal HTML elements -->
+
+  <script>
+    // Declare variables at the top level, but assign them only in DOMContentLoaded
+    let dropZone, fileInput, tableBody, detailsContainer, detailsTabButtons;
+    let detailsContentAreas = {}; // Object will be populated later
+    let filterInput, statusCodeFilter, methodFilter, contentTypeFilter;
+    let clearFiltersButton, exportButton, themeToggle;
+    // Removed modal-related variables: errorModal, errorMessage, closeModalButton, infoModal, infoModalTitle, infoModalMessage, closeInfoModalButton;
+    let performanceSummary, totalRequestsElem, totalTimeElem, totalTimeLabel, totalSizeElem, errorCountElem, redirectCountElem;
+    let detailsSearchInput, detailsSearchButton;
+    
+    let allEntries = []; // Stores all HAR entries
+    let filteredEntries = []; // Stores currently filtered entries
+    let currentActiveDetailTab = 'overview'; // Stores the currently active tab in the details section
+    
+    // Function to initialize DOM elements and event listeners
+    function initializeDomElements() {
+      dropZone = document.getElementById('dropZone');
+      fileInput = document.getElementById('fileInput');
+      tableBody = document.querySelector('#requestTable tbody');
+      detailsContainer = document.getElementById('details-container');
+      detailsTabButtons = document.querySelectorAll('.details-tab-button');
+      
+      // Initialize detailsContentAreas here after DOM is loaded
+      detailsContentAreas = {
+        overview: document.getElementById('details-content-overview'),
+        requestHeaders: document.getElementById('details-content-request-headers'),
+        requestBody: document.getElementById('details-content-request-body'),
+        responseHeaders: document.getElementById('details-content-response-headers'),
+        responseBody: document.getElementById('details-content-response-body'),
+      };
+
+      filterInput = document.getElementById('filterInput');
+      statusCodeFilter = document.getElementById('statusCodeFilter');
+      methodFilter = document.getElementById('methodFilter');
+      contentTypeFilter = document.getElementById('contentTypeFilter');
+      clearFiltersButton = document.getElementById('clearFiltersButton');
+      exportButton = document.getElementById('exportButton');
+      themeToggle = document.getElementById('themeToggle');
+      // Removed modal-related element assignments
+      performanceSummary = document.getElementById('performance-summary');
+      totalRequestsElem = document.getElementById('totalRequests');
+      totalTimeElem = document.getElementById('totalTime');
+      totalSizeElem = document.getElementById('totalSize');
+      errorCountElem = document.getElementById('errorCount');
+      redirectCountElem = document.getElementById('redirectCount');
+      detailsSearchInput = document.getElementById('detailsSearchInput');
+      detailsSearchButton = document.getElementById('detailsSearchButton');
+
+      // Event Listeners for Drag & Drop and file selection
+      dropZone.addEventListener('click', () => fileInput.click());
+      dropZone.addEventListener('dragover', e => {
+        e.preventDefault(); // Prevent default behavior
+        dropZone.classList.add('border-accent-color', 'shadow-lg'); // Visual feedback
+      });
+      dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('border-accent-color', 'shadow-lg');
+      });
+      dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropZone.classList.remove('border-accent-color', 'shadow-lg');
+        handleFile(e.dataTransfer.files[0]); // Process the first file
+      });
+      fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
+
+      // Removed Event Listeners for closing modals
+      // closeModalButton.addEventListener('click', () => { errorModal.style.display = 'none'; });
+      // closeInfoModalButton.addEventListener('click', () => { infoModal.style.display = 'none'; });
+
+      // Event Listeners for tab buttons
+      detailsTabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          const tab = button.dataset.tab;
+          activateTab(tab);
+        });
+      });
+
+      // Event Listeners for filter changes
+      filterInput.addEventListener('input', applyFilters);
+      statusCodeFilter.addEventListener('change', applyFilters);
+      methodFilter.addEventListener('change', applyFilters);
+      contentTypeFilter.addEventListener('change', applyFilters);
+      
+      // clearAllFilters will now just clear filters without showing info
+      clearFiltersButton.addEventListener('click', () => {
+        clearAllFilters(); 
+      });
+
+      exportButton.addEventListener('click', exportTableData);
+      themeToggle.addEventListener('click', toggleTheme);
+
+      // Event Listeners for details search
+      detailsSearchButton.addEventListener('click', searchInDetails);
+      detailsSearchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          searchInDetails();
+        }
+      });
+
+      resetDetailsView(); // Initialize the details view after loading elements
+    }
+
+
+    /**
+     * Placeholder for error messages (will log to console instead of showing popup).
+     * @param {string} message - The error message to log.
+     */
+    function showErrorMessage(message) {
+        console.error('Error:', message);
+    }
+
+    /**
+     * Placeholder for information messages (will log to console instead of showing popup).
+     * @param {string} title - The title of the message.
+     * @param {string} message - The message to log.
+     */
+    function showInfoMessage(title, message) {
+        console.log('Info:', title, message);
+    }
+
+    /**
+     * Processes the uploaded HAR file.
+     * @param {File} file - The uploaded file.
+     */
+    function handleFile(file) {
+      if (!file) {
+        console.log('No file selected.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const har = JSON.parse(e.target.result);
+          if (har && har.log && har.log.entries) {
+            allEntries = har.log.entries; // Store all entries
+            applyFilters(); // Apply filters and render table
+            performanceSummary.classList.remove('hidden'); // Show performance summary
+          } else {
+            showErrorMessage('Invalid HAR file format: "log.entries" not found.');
+          }
+        } catch (err) {
+          console.error('Error parsing HAR file:', err);
+          showErrorMessage('Invalid HAR file: ' + err.message);
+        }
+      };
+      reader.onerror = () => {
+        showErrorMessage('Error reading file.');
+      };
+      reader.readAsText(file);
+    }
+
+    /**
+     * Applies current filters to all entries and re-renders the table.
+     */
+    function applyFilters() {
+      const searchTerm = filterInput.value.toLowerCase();
+      const selectedStatusCode = statusCodeFilter.value;
+      const selectedMethod = methodFilter.value;
+      const selectedContentType = contentTypeFilter.value;
+
+      filteredEntries = allEntries.filter(entry => {
+        const url = entry.request.url.toLowerCase();
+        let domain = '';
+        try {
+          domain = new URL(url).hostname.toLowerCase();
+        } catch (e) {
+          // domain remains empty for invalid URL
+        }
+        const status = entry.response.status;
+        const method = entry.request.method.toLowerCase();
+        const mimeType = entry.response.content.mimeType ? entry.response.content.mimeType.toLowerCase() : '';
+
+        // Text filter
+        const matchesSearchTerm = url.includes(searchTerm) || domain.includes(searchTerm);
+
+        // Status code filter
+        let matchesStatusCode = true;
+        if (selectedStatusCode) {
+          if (selectedStatusCode === '2xx') matchesStatusCode = (status >= 200 && status < 300);
+          else if (selectedStatusCode === '3xx') matchesStatusCode = (status >= 300 && status < 400);
+          else if (selectedStatusCode === '4xx') matchesStatusCode = (status >= 400 && status < 500);
+          else if (selectedStatusCode === '5xx') matchesStatusCode = (status >= 500 && status < 600);
+        }
+
+        // Method filter
+        const matchesMethod = selectedMethod ? method === selectedMethod.toLowerCase() : true;
+
+        // Content type filter
+        let matchesContentType = true;
+        if (selectedContentType) {
+          if (selectedContentType === 'image') matchesContentType = mimeType.startsWith('image/');
+          else if (selectedContentType === 'script') matchesContentType = mimeType.includes('javascript') || mimeType.includes('ecmascript');
+          else if (selectedContentType === 'stylesheet') matchesContentType = mimeType.includes('css');
+          else if (selectedContentType === 'document') matchesContentType = mimeType.includes('text/html');
+          else if (selectedContentType === 'xhr') matchesContentType = entry.request.headers.some(h => h.name.toLowerCase() === 'x-requested-with' && h.value.toLowerCase() === 'xmlhttprequest'); // Simplified XHR detection
+          else if (selectedContentType === 'json') matchesContentType = mimeType.includes('application/json');
+          else if (selectedContentType === 'other') matchesContentType = !(mimeType.startsWith('image/') || mimeType.includes('javascript') || mimeType.includes('css') || mimeType.includes('text/html') || mimeType.includes('application/json') || entry.request.headers.some(h => h.name.toLowerCase() === 'x-requested-with' && h.value.toLowerCase() === 'xmlhttprequest'));
+        }
+
+        return matchesSearchTerm && matchesStatusCode && matchesMethod && matchesContentType;
+      });
+
+      renderTable(filteredEntries);
+      calculateAndDisplayMetrics(filteredEntries);
+      detailsContainer.classList.add('hidden'); // Hide details section on filter change
+      resetDetailsView(); // Reset details view
+    }
+
+    /**
+     * Resets all filters and re-renders the table.
+     */
+    function clearAllFilters() {
+      filterInput.value = '';
+      statusCodeFilter.value = '';
+      methodFilter.value = '';
+      contentTypeFilter.value = '';
+      applyFilters();
+      showInfoMessage('Filters Cleared', 'All filters have been reset.');
+    }
+
+    /**
+     * Renders the table with HAR entries.
+     * @param {Array<Object>} entries - A list of HAR entries.
+     */
+    function renderTable(entries) {
+      tableBody.innerHTML = ''; // Clear existing rows
+      if (entries.length === 0) {
+        const noDataRow = document.createElement('tr');
+        noDataRow.innerHTML = `<td colspan="6" class="text-center py-4 text-gray-500">No data to display, please adjust filters.</td>`;
+        tableBody.appendChild(noDataRow);
+        return;
+      }
+
+      entries.forEach(entry => {
+        const { method, url } = entry.request;
+        const { status } = entry.response;
+        let domain = '';
+        try {
+          domain = new URL(url).hostname;
+        } catch (e) {
+          domain = 'Invalid URL';
+        }
+        const time = Math.round(entry.time);
+        // Favicon URL with fallback for errors
+        const favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=16`;
+
+        const tr = document.createElement('tr');
+        tr.classList.add('hover:bg-gray-700', 'transition-colors', 'duration-200'); // Tailwind hover effect
+
+        // Add status class based on status code
+        let statusClass = '';
+        if (status >= 200 && status < 300) {
+          statusClass = 'status-2xx';
+        } else if (status >= 300 && status < 400) {
+          statusClass = 'status-3xx';
+        } else if (status >= 400 && status < 600) {
+          statusClass = 'status-4xx';
+        }
+
+        const displayUrl = url.length > 70 ? url.slice(0, 70) + '...' : url;
+
+        tr.innerHTML = `
+          <td class="method">${method}</td>
+          <td class="status ${statusClass}">${status}</td>
+          <td>
+            ${displayUrl}
+            <button class="copy-button" onclick="copyToClipboard(event, '${url}')">Copy</button>
+          </td>
+          <td>${domain}</td>
+          <td><img src="${favicon}" class="favicon" onerror="this.onerror=null;this.src='https://placehold.co/20x20/3a3a4f/e0e0e0?text=?'" alt="Favicon"></td>
+          <td>${time}</td>
+        `;
+
+        // Event Listener for row click to show details
+        tr.addEventListener('click', (event) => {
+          // Prevent the copy button click from triggering row selection
+          if (event.target.classList.contains('copy-button')) {
+            return;
+          }
+          displayDetails(entry);
+          detailsContainer.classList.remove('hidden'); // Show details section
+        });
+
+        tableBody.appendChild(tr);
+      });
+    }
+
+    /**
+     * Calculates and displays performance metrics.
+     * @param {Array<Object>} entries - A list of HAR entries.
+     */
+    function calculateAndDisplayMetrics(entries) {
+      let totalTime = 0;
+      let totalSize = 0;
+      let errorCount = 0;
+      let redirectCount = 0;
+
+      entries.forEach(entry => {
+        totalTime += entry.time || 0;
+        if (entry.response && entry.response.content && entry.response.content.size > 0) {
+          totalSize += entry.response.content.size;
+        }
+        if (entry.response && entry.response.status) {
+          if (entry.response.status >= 400 && entry.response.status < 600) {
+            errorCount++;
+          } else if (entry.response.status >= 300 && entry.response.status < 400) {
+            redirectCount++;
+          }
+        }
+      });
+
+      totalRequestsElem.textContent = entries.length;
+      totalTimeElem.textContent = `${Math.round(totalTime)} ms`;
+      totalSizeElem.textContent = `${(totalSize / 1024).toFixed(2)} KB`; // Convert to KB
+      errorCountElem.textContent = errorCount;
+      redirectCountElem.textContent = redirectCount;
+    }
+
+    /**
+     * Displays the details of a selected HAR entry in the tabs.
+     * @param {Object} entry - The selected HAR entry.
+     */
+    function displayDetails(entry) {
+      // Reset all details content areas
+      Object.values(detailsContentAreas).forEach(area => {
+        if (area) { // Defensive check
+            area.innerHTML = '';
+        }
+      });
+
+      // Add copy buttons to all detail areas
+      for (const key in detailsContentAreas) {
+        if (detailsContentAreas.hasOwnProperty(key)) {
+          const area = detailsContentAreas[key];
+          if (area) { // Added defensive check
+            const copyButton = document.createElement('button');
+            copyButton.classList.add('details-content-copy-button');
+            copyButton.textContent = 'Copy';
+            copyButton.onclick = () => copyDetailsContent(key);
+            area.appendChild(copyButton);
+          }
+        }
+      }
+
+      // Overview
+      if (detailsContentAreas.overview) {
+        detailsContentAreas.overview.innerHTML = `<button class="details-content-copy-button" onclick="copyDetailsContent('overview')">Copy</button><pre>${JSON.stringify(entry, null, 2)}</pre>`;
+      }
+
+
+      // Request Headers
+      if (detailsContentAreas.requestHeaders) {
+        if (entry.request && entry.request.headers) {
+          let headersHtml = '<pre><ul>';
+          entry.request.headers.forEach(header => {
+            headersHtml += `<li><strong>${header.name}:</strong> ${header.value}</li>`;
+          });
+          headersHtml += '</ul></pre>';
+          detailsContentAreas.requestHeaders.innerHTML = headersHtml;
+        } else {
+          detailsContentAreas.requestHeaders.innerHTML = '<pre>No request headers available.</pre>';
+        }
+      }
+
+
+      // Request Body
+      if (detailsContentAreas.requestBody) {
+        if (entry.request && entry.request.postData && entry.request.postData.text) {
+          try {
+            const parsed = JSON.parse(entry.request.postData.text);
+            detailsContentAreas.requestBody.innerHTML = `<pre>${JSON.stringify(parsed, null, 2)}</pre>`;
+          } catch (e) {
+            detailsContentAreas.requestBody.innerHTML = `<pre>${entry.request.postData.text}</pre>`;
+          }
+        } else {
+          detailsContentAreas.requestBody.innerHTML = '<pre>No request body available.</pre>';
+        }
+      }
+
+
+      // Response Headers
+      if (detailsContentAreas.responseHeaders) {
+        if (entry.response && entry.response.headers) {
+          let headersHtml = '<pre><ul>';
+          entry.response.headers.forEach(header => {
+            headersHtml += `<li><strong>${header.name}:</strong> ${header.value}</li>`;
+          });
+          headersHtml += '</ul></pre>';
+          detailsContentAreas.responseHeaders.innerHTML = headersHtml;
+        } else {
+          detailsContentAreas.responseHeaders.innerHTML = '<pre>No response headers available.</pre>';
+        }
+      }
+
+
+      // Response Body
+      if (detailsContentAreas.responseBody) {
+        if (entry.response && entry.response.content && entry.response.content.text) {
+          const content = entry.response.content;
+          if (content.mimeType.includes('application/json')) {
+            try {
+              const parsed = JSON.parse(content.text);
+              detailsContentAreas.responseBody.innerHTML = `<pre>${JSON.stringify(parsed, null, 2)}</pre>`;
+            } catch (e) {
+              detailsContentAreas.responseBody.innerHTML = `<pre>${content.text}</pre>`;
+            }
+          } else if (content.mimeType.includes('image/') && content.encoding === 'base64') {
+            detailsContentAreas.responseBody.innerHTML = `<img src="data:${content.mimeType};base64,${content.text}" alt="Response Image">`;
+          } else if (content.mimeType.includes('text/html') || content.mimeType.includes('text/css') || content.mimeType.includes('application/javascript')) {
+            detailsContentAreas.responseBody.innerHTML = `<pre>${content.text}</pre>`;
+          } else {
+            detailsContentAreas.responseBody.innerHTML = `<pre>Content Type: ${content.mimeType}\n\n${content.text}</pre>`;
+          }
+        } else {
+          detailsContentAreas.responseBody.innerHTML = '<pre>No response body available.</pre>';
+        }
+      }
+
+      // Activate the "Overview" tab by default
+      activateTab(currentActiveDetailTab);
+    }
+
+    /**
+     * Activates the specified tab in the details section.
+     * @param {string} tabName - The name of the tab to activate (e.g., 'overview', 'request-headers').
+     */
+    function activateTab(tabName) {
+      currentActiveDetailTab = tabName;
+      detailsTabButtons.forEach(button => {
+        if (button.dataset.tab === tabName) {
+          button.classList.add('active');
+        } else {
+          button.classList.remove('active');
+        }
+      });
+
+      Object.keys(detailsContentAreas).forEach(key => {
+        const contentArea = detailsContentAreas[key];
+        // Convert camelCase to kebab-case for comparison
+        if (key.replace(/([A-Z])/g, '-$1').toLowerCase() === tabName) {
+          if (contentArea) { // Defensive check
+            contentArea.classList.remove('hidden');
+          }
+        } else {
+          if (contentArea) { // Defensive check
+            contentArea.classList.add('hidden');
+          }
+        }
+      });
+
+      detailsSearchInput.value = ''; // Clear search field on tab change
+      clearSearchHighlighting(); // Remove highlighting
+    }
+
+
+    /**
+     * Copies the content of a detail area to the clipboard.
+     * @param {string} areaKey - The key of the detail area (e.g., 'overview', 'requestHeaders').
+     */
+    function copyDetailsContent(areaKey) {
+      const contentArea = detailsContentAreas[areaKey];
+      let textToCopy = '';
+
+      // For <pre> tags, take the text content directly
+      const preElement = contentArea.querySelector('pre');
+      if (preElement) {
+        textToCopy = preElement.textContent;
+      } else if (contentArea.querySelector('img')) {
+        // For images, copy the src
+        textToCopy = contentArea.querySelector('img').src;
+      } else {
+        // For other content (e.g., lists of headers)
+        textToCopy = contentArea.textContent;
+      }
+
+      copyToClipboard(null, textToCopy);
+      showInfoMessage('Copied!', 'Content has been copied to clipboard.'); // No silent parameter
+    }
+
+    /**
+     * Copies the given text to the clipboard.
+     * @param {Event} event - The click event (optional, to stop bubbling).
+     * @param {string} text - The text to copy.
+     */
+    function copyToClipboard(event, text) {
+      if (event) {
+        event.stopPropagation(); // Prevents the row click event from firing
+      }
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
+
+    /**
+     * Exports the currently filtered table data as a JSON file.
+     */
+    function exportTableData() {
+      if (filteredEntries.length === 0) {
+        showErrorMessage('No data to export.', 'There are no filtered entries to export.'); // No silent parameter
+        return;
+      }
+
+      const dataStr = JSON.stringify({ log: { entries: filteredEntries } }, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'har_filtered_export.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showInfoMessage('Export Successful', 'The filtered data has been exported as JSON.'); // No silent parameter
+    }
+
+    /**
+     * Toggles between Dark and Light Mode.
+     */
+    function toggleTheme() {
+      document.body.classList.toggle('light-mode');
+      const isLightMode = document.body.classList.contains('light-mode');
+      themeToggle.textContent = isLightMode ? 'Dark Mode' : 'Light Mode';
+      showInfoMessage('Theme Changed', `You have switched to ${isLightMode ? 'light' : 'dark'} theme.`); // No silent parameter
+    }
+
+    /**
+     * Searches for text in the currently active details area and highlights it.
+     */
+    function searchInDetails() {
+      const searchTerm = detailsSearchInput.value.toLowerCase();
+      const activeContentArea = detailsContentAreas[currentActiveDetailTab.replace(/-([a-z])/g, (g) => g[1].toUpperCase())]; // Convert kebab-case to camelCase
+
+      clearSearchHighlighting(); // Remove previous highlights
+
+      if (!searchTerm || !activeContentArea) { 
+        return;
+      }
+
+      // Only search text nodes to avoid damaging HTML tags
+      if (activeContentArea.querySelector('pre')) {
+        const preElement = activeContentArea.querySelector('pre');
+        const originalText = preElement.textContent;
+        const regex = new RegExp(`(${searchTerm})`, 'gi');
+        preElement.innerHTML = originalText.replace(regex, `<span style="background-color: yellow; color: black;">$1</span>`);
+      } else {
+        // Fallback for other elements, but use with caution
+        const originalHtml = activeContentArea.innerHTML;
+        const regex = new RegExp(`(${searchTerm})`, 'gi');
+        activeContentArea.innerHTML = originalHtml.replace(regex, `<span style="background-color: yellow; color: black;">$1</span>`);
+      }
+    }
+
+    /**
+     * Removes all search highlighting in the details section.
+     */
+    function clearSearchHighlighting() {
+      Object.values(detailsContentAreas).forEach(area => {
+        const preElement = area ? area.querySelector('pre') : null; // Defensive check for area
+        if (preElement) {
+          const highlightedSpans = preElement.querySelectorAll('span[style*="background-color: yellow"]');
+          highlightedSpans.forEach(span => {
+            span.outerHTML = span.innerHTML; // Replace the span with its content
+          });
+        }
+      });
+    }
+
+
+    /**
+     * Resets the details view to its initial state.
+     */
+    function resetDetailsView() {
+      // Clear all details content areas
+      Object.values(detailsContentAreas).forEach(area => {
+        if (area) { // Added defensive check
+            area.innerHTML = '';
+        }
+      });
+
+      // Reset the overview tab
+      if (detailsContentAreas.overview) {
+        detailsContentAreas.overview.innerHTML = `<button class="details-content-copy-button" onclick="copyDetailsContent('overview')">Copy</button><pre>Click a row to view details</pre>`;
+      }
+      
+      activateTab('overview');
+    }
+
+    // Initialization: Resets the details section
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeDomElements(); // Call the initialization function
+    });
+  </script>
+</body>
+</html>
